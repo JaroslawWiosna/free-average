@@ -1,6 +1,11 @@
 #include <cstdio>
 #include <cassert>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
 #include <chrono>
 #include <thread>
 #include <optional>
@@ -40,6 +45,9 @@ std::optional<T> Ring_buffer<T, capacity>::avg() {
     return acc / capacity;
 }
 
+char buf[8192];
+int fd;
+
 int main() {
     float i{};
     setbuf(stdout, nullptr);
@@ -49,6 +57,10 @@ int main() {
     Ring_buffer<float, times_per_sec * 60 * 2> two_minutes{};
 
     while (1) {
+        fd = open("/proc/meminfo", O_RDONLY);        
+        int n = read(fd, buf, sizeof (buf - 1));
+        buf[n] = '\0';
+
         one_second.push(i);
         one_minute.push(i);
         two_minutes.push(i);
